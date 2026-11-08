@@ -497,6 +497,9 @@ def write_csv(path: Path, rows: list[dict]) -> None:
 
 def run_audit(input_path: str, out_dir: str) -> int:
     files = list_episode_files(input_path)
+    if not files:
+        print(f"No .txt episode files found under {input_path}. If the folder only holds a .zip, unzip it first.", file=sys.stderr)
+        return 2
     episodes: list[ParsedEpisode] = []
     raws: dict[str, str] = {}
     failed: list[tuple[str, str]] = []
@@ -537,6 +540,8 @@ def run_audit(input_path: str, out_dir: str) -> int:
     write_csv(out / "label_tokens.csv", (
         [{"token": t, "count": c, "class": "modifier"} for t, c in labels["modifier_tokens"].most_common()]
         + [{"token": t, "count": c, "class": "tone"} for t, c in labels["tone_tokens"].most_common()]))
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     print(report)
     print(f"\nWrote report and CSVs to {out}/")
     return 1 if failed else 0

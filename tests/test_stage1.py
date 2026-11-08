@@ -312,3 +312,9 @@ def test_run_audit_reports_failures_loudly(tmp_path):
     (tmp_path / "in" / "bad.txt").write_text("not an episode", encoding="utf-8")
     assert run_audit(str(tmp_path / "in"), str(tmp_path / "out")) == 1
     assert "FAILED TO PARSE: bad.txt" in (tmp_path / "out" / "audit_report.txt").read_text(encoding="utf-8")
+
+
+def test_run_audit_with_no_txt_files_says_so(tmp_path, capsys):
+    (tmp_path / "pack.zip").write_text("zip", encoding="utf-8")
+    assert run_audit(str(tmp_path), str(tmp_path / "out")) == 2
+    assert "unzip" in capsys.readouterr().err

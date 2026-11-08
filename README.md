@@ -10,12 +10,20 @@ pip install -r requirements.txt
 ```
 
 ## Run the audit
-Put the episode `.txt` files in `data/` (gitignored), then:
+Keep the confidential pack and the audit outputs OUTSIDE the repo, next to it:
 ```
-python -m promofinder audit --input data/<folder> --out outputs/audit
+Kuku Assignment/
+  data/      <- unzipped episode .txt files (any subfolder depth)
+  outputs/   <- audit results (contain episode text)
+  repo/      <- this repo (the only git repo)
 ```
-Prints the report and writes `audit_report.txt` plus CSVs to `outputs/audit/` (gitignored: it contains episode text).
-Exit code 1 means at least one file failed to parse; the failure is listed at the top of the report.
+From inside `repo/` (PowerShell):
+```
+.\.venv\Scripts\activate
+python -m promofinder audit --input ..\data --out ..\outputs\audit
+```
+Exit code 1 means at least one file failed to parse; it is listed at the top of the report.
+`data/` and `outputs/` inside the repo are also git-ignored as a second guard.
 
 ## Tests (synthetic sample only)
 ```
