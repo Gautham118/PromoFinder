@@ -1,0 +1,11 @@
+# Confidential Kuku pack, raw outputs, secrets, caches (CLAUDE.md section 12)
+data/
+outputs/
+.env
+.cache/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/

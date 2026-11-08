@@ -1,0 +1,193 @@
+EPISODE NUMBER: Episode 1
+EPISODE LOGLINE: A dock clerk finds a ledger that names her harbor captain, and he locks the door to stop her reading it.
+CONTINUITY NOTES: First episode of a synthetic example series. Invented for tests; not derived from any real script.
+
+--- SCRIPT START ---
+
+SCENE 01
+Scene heading: INT. LIGHTHOUSE KITCHEN – NIGHT
+Scene start: 00:00.00
+Scene end: 00:40.00
+
+Actions and dialogue:
+
+**CAMERA:**
+Start: (00:00.00) | End: (00:04.00)
+Slow push toward a rain-streaked window in a dim kitchen.
+
+**SOUND FX:**
+Start: (00:00.50) | End: (00:04.00)
+A distant foghorn sounds over steady rain.
+
+**CAMERA:**
+Start: (00:04.00) | End: (00:07.00)
+Over-the-shoulder shot of a young woman gripping a brass key.
+
+**ACTION:**
+Start: (00:04.50) | End: (00:07.00)
+Nora turns the key over in her palm, listening for footsteps.
+
+**CAMERA:**
+Start: (00:07.00) | End: (00:09.00)
+Close-up on Nora's pale face.
+
+**NORA (Hushed, Fearful):**
+Start: (00:07.50) | End: (00:09.00)
+"He is not coming back."
+
+**CAMERA:**
+Start: (00:09.00) | End: (00:12.00)
+Medium shot of a tall man in a captain's coat filling the doorway.
+
+**CAPTAIN HOLT (Cold, Controlled):**
+Start: (00:09.50) | End: (00:12.80)
+"You counted the crates yourself..."
+
+**CAMERA:**
+Start: (00:12.00) | End: (00:15.00)
+Low angle on the captain as he steps into the lamplight.
+
+**CAPTAIN HOLT (Cold):**
+Start: (00:13.00) | End: (00:14.50)
+"...and now one is missing."
+
+**CAMERA:**
+Start: (00:15.00) | End: (00:18.00)
+Two-shot across the kitchen table.
+
+**NORA (Trembling):**
+Start: (00:15.50) | End: (00:17.00)
+"I thought you trusted me..."
+
+**ACTION:**
+Start: (00:17.50) | End: (00:20.00)
+Holt closes the door and slides the bolt across.
+
+**CAPTAIN HOLT (Flat):**
+Start: (00:18.20) | End: (00:19.40)
+"Trust is a luxury."
+
+**CAMERA:**
+Start: (00:19.50) | End: (00:22.00)
+Tight shot of the bolt locking.
+
+**NORA (O.S.) (Shaking):**
+Start: (00:20.00) | End: (00:21.50)
+"I only touched the lock."
+
+**CAMERA:**
+Start: (00:22.00) | End: (00:26.00)
+Wide shot of the kitchen with a radio glowing on the shelf.
+
+**TECHNICIAN (V.O.):**
+Start: (00:22.50) | End: (00:24.00)
+"Dock nine, please confirm."
+
+**NORA (Defiant):**
+Start: (00:24.20) | End: (00:25.50)
+"Ask him about the ledger..."
+
+**NORA (Defiant):**
+Start: (00:25.70) | End: (00:27.00)
+"...the one with no name..."
+
+**CAMERA:**
+Start: (00:26.00) | End: (00:30.00)
+Close-up on Nora as she lifts her chin.
+
+**NORA (Defiant, Low):**
+Start: (00:27.20) | End: (00:29.00)
+"...kept under the floorboards."
+
+**CAPTAIN HOLT (Cold):**
+Start: (00:28.60) | End: (00:31.00)
+"Enough. One more word and the harbor ledger burns with you."
+
+**CAMERA:**
+Start: (00:30.00) | End: (00:33.00)
+Push-in on Holt's clenched jaw.
+
+**CAMERA:**
+Start: (00:32.50) | End: (00:36.00)
+Handheld shot toward the corridor.
+
+**SOUND FX:**
+Start: (00:33.00) | End: (00:35.00)
+Glass shatters somewhere in the corridor.
+
+**CAMERA:**
+Start: (00:36.00) | End: (00:40.00)
+Overhead shot of the table and the two figures.
+
+**ACTION:**
+Start: (00:36.50) | End: (00:40.00)
+Holt slides a sealed envelope across the table toward Nora.
+
+SCENE 02
+Scene heading: INT. HARBOR OFFICE – NIGHT
+Scene start: 00:40.00
+Scene end: 01:05.50
+
+Actions and dialogue:
+
+**CAMERA:**
+Start: (00:40.00) | End: (00:44.00)
+Exterior of the harbor office, lights flickering in the storm.
+
+**ACTION:**
+Start: (00:40.00) | End: (00:44.00)
+Nora hurries inside clutching the envelope against her coat.
+
+**TECHNICIAN (Urgent):**
+Start: (00:41.00) | End: (00:43.00)
+"Harbor control, we have a breach at dock nine!"
+
+**CAMERA:**
+Start: (00:44.00) | End: (00:50.00)
+Slow track along a wall of dripping charts.
+
+**NORA (Quiet, Resolute):**
+Start: (00:45.00) | End: (00:47.50)
+"If I open this, there is no going back."
+
+**CAPTAIN HOLT (O.S. / Low, Threatening):**
+Start: (00:48.00) | End: (00:50.50)
+"There never was."
+
+**CAMERA:**
+Start: (00:50.00) | End: (00:56.00)
+Close-up on the envelope as Nora breaks the seal.
+
+**ACTION:**
+Start: (00:50.50) | End: (00:53.00)
+Nora unfolds a single page and freezes.
+
+**NORA (Breathless):**
+Start: (00:53.50) | End: (00:55.50)
+"The name on the cover is yours."
+
+**CAMERA:**
+Start: (00:56.00) | End: (00:59.50)
+Reverse shot on Holt, his face unreadable.
+
+**CAPTAIN HOLT (Cold):**
+Start: (00:57.00) | End: (00:58.50)
+"Then you know who else has been reading it."
+
+**CAMERA:**
+Start: (00:59.50) | End: (01:04.50)
+Slow push toward Nora as the lamp behind her dies.
+
+**NORA (Whispering):**
+Start: (01:00.00) | End: (01:02.00)
+"Who else knows?"
+
+**SOUND FX:**
+Start: (01:01.00) | End: (01:04.50)
+A low string sting swells into a cliffhanger.
+
+**CAMERA:**
+Start: (01:04.50) | End: (01:05.50)
+Cut to black.
+
+--- SCRIPT END ---
