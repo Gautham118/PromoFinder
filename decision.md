@@ -78,6 +78,15 @@ Updated every session. Last updated: 2026-11-08 (after Stages 2-4 implementation
 - The same character appears under different labels across episodes, so no logic may use labels for identity. Glue is unaffected (0 different-speaker rejections).
 - Status: Stage 1 closed.
 
+**D14. Codex's Stage 2-4 code is the base; Claude's earlier unmerged Stage 2 is discarded.** Review found 6 defects (cut inside speech accepted, no repair retry, retry policy, cwd-dependent rubric path, judge shuffle/quote checks, undefined score-2) and no tests; all fixed in one patch with 29 new tests (67 pass).
+**D15. Keep Codex's client interface (complete_json(system, user, response_model)) instead of CLAUDE.md's generate_json(messages, schema, temperature, seed).** Same function and still swappable. Recorded as a deviation.
+**D16. The validator REJECTS cuts inside an utterance (never repairs them).** The section 7 "trim edge units" duration repair is not built; reject only. Revisit if real runs show many near-miss durations.
+**D17. Model replies may contain extra keys (ignored). One repair retry for invalid JSON or schema, then a loud failure. A bad reply is never cached.**
+**D18. rubric.md now defines the score-2 anchors (tunable); the gate depends on what 2 means.**
+**D19. Judge: seeded shuffle of clip order, clips wrapped as data, quotes in reasons verified or stripped. Evidence IDs outside the clip still raise (Stage 5 must record that as a failure, not crash).**
+**D20. Measured (estimates, chars/4): proposer 1.7k-4.0k input tokens per call (median 2.8k, total ~142k); judge up to ~4.9k for 5 clips.**
+**D21. Stress test on all 50 real episodes with 2000 random windows: 0 crashes, 14% rejected for cutting inside speech.**
+
 ## Next steps (the author's short list)
 1. Unzip the repo, run the Codex prompt, and confirm `pytest` shows 37 passed and `git status` shows no `data/` or `outputs/`.
 2. Create a free Groq key at console.groq.com, turn on Zero Data Retention in Data Controls, and confirm the no-training statement on Groq's own pages (D4). Put the key in `.env` as `GROQ_API_KEY`. Do not paste it into any chat.
