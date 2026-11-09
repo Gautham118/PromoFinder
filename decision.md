@@ -3,7 +3,7 @@
 How this file works: the author asked Claude to make project decisions for them and to record each one here with the reason.
 Each entry: what was decided, why, whether it is easy to reverse, and its status. CLAUDE.md stays the source of truth for
 the plan; plan-level changes are ALSO added to its Decisions log. Contains no pack content (numbers only).
-Updated every session. Last updated: 2026-11-08 (after Stages 2-4 implementation).
+Updated every session. Last updated: 2026-11-09 (after Stages 2-4 implementation).
 
 ## Working rule (D0)
 - **Decision:** Claude decides by default, states one clear choice, logs it here, and flags any conflict with CLAUDE.md. It only asks the author for something Claude cannot do (create keys, run things locally, spend money).
@@ -86,9 +86,23 @@ Updated every session. Last updated: 2026-11-08 (after Stages 2-4 implementation
 **D19. Judge: seeded shuffle of clip order, clips wrapped as data, quotes in reasons verified or stripped. Evidence IDs outside the clip still raise (Stage 5 must record that as a failure, not crash).**
 **D20. Measured (estimates, chars/4): proposer 1.7k-4.0k input tokens per call (median 2.8k, total ~142k); judge up to ~4.9k for 5 clips.**
 **D21. Stress test on all 50 real episodes with 2000 random windows: 0 crashes, 14% rejected for cutting inside speech.**
+**D22. Model: `openai/gpt-oss-120b` on Groq (config.yaml default, provider groq).**
+- Why: you picked it in the model list; it is the largest open-weight instruction model offered there (D5 rule: weaker models fail strict JSON and unit IDs first). Fallback if it fails JSON on the 3-episode dev run: `openai/gpt-oss-20b`.
+- Risk (unverified): Groq free-tier token-per-minute and per-day limits. The client already waits on Retry-After, and a re-run reuses the cache, so a daily cap only delays the run. Check your limits on the Groq console before the full run.
+- Reversible: yes (config.yaml or `--model`). Status: in force.
 
-## Next steps (the author's short list)
-1. Unzip the repo, run the Codex prompt, and confirm `pytest` shows 37 passed and `git status` shows no `data/` or `outputs/`.
-2. Create a free Groq key at console.groq.com, turn on Zero Data Retention in Data Controls, and confirm the no-training statement on Groq's own pages (D4). Put the key in `.env` as `GROQ_API_KEY`. Do not paste it into any chat.
-3. Run the Stage 1 audit locally on the real pack (outside Codex's folder) and check it matches the numbers in CLAUDE.md.
-4. Implement Stage 5: wire Stages 2-4 into the resumable `run` CLI, then add deterministic gating, ranking, deduplication, and JSON/CSV/HTML reports.
+**D23. Real vs mock cannot be confused.** config.yaml now defaults to groq. `--provider mock` prints a banner, writes `MOCK_RUN.txt`, puts a red banner in report.html, sets `"is_mock": true` and a `mock-` run id. A real provider with no key exits with code 2 before anything runs.
+
+**D24. Overlap rule: overlap longer than 30% of the SHORTER clip drops the lower-ranked pick.** CLAUDE.md said only "overlap > 30%"; this fixes the denominator. Reversible: one constant (`OVERLAP_LIMIT`).
+
+**D25. Ranking order:** recap-flagged picks sort after unflagged ones (demoted, still listed); then weighted score; then density; then earlier start. Max 2 per episode, global top 15. The `spoiler_risk` tie-break is not built (no flag exists yet). The "between promos" duplicate check is not built; only the check against the previous episode is.
+
+**D26. Failure handling.** Per episode: propose errors, judge errors (wrong count, evidence outside the clip, invalid JSON after the repair retry) and any unexpected exception become rows in `failures.json/csv` and the run continues. Validator rejections go in the same file (kind `rejected_candidate`) so validity rate can be counted. Exit code is 1 if any non-validator failure exists. Raw per-episode outputs are written as produced in `raw/`.
+- Note: a judge reply that is valid JSON but breaks the evidence rule is cached, so a plain re-run repeats it. Use `--fresh` to re-ask.
+
+**D27. Provenance.** Every promo carries provider, model, `prompt_hash` (rubric + both prompt templates, 12 hex chars) and `run_id`. Freeze and record the hash before the held-out run (D9).
+
+**D28. Judge candidate IDs are NOT relabelled yet.** The judge already sees a seeded shuffle, so order is blunted. Relabel only if the dev run shows the judge favouring C01. Not built.
+
+**D29. Cut order applied for the 8pm deadline.** Cut: video, random baseline, consistency runs. Graded episodes: 5 (dev E008, E021, E033 plus held-out E048, E042, in D9 order). Kept: audit, validator, 50-episode raw outputs, B1-vs-final comparison, failure log, one-command run, 2-page doc.
+- Added `--only` (for the 3-episode token measurement and the graded set) and `--fresh` (bypass cache). Both are in the run command, not new features of the plan.

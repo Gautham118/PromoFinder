@@ -35,7 +35,7 @@ Judged on five lenses: problem choice and framing; approach and scale (AI vs cod
   - [x] 2. Propose stage
   - [x] 3. Validate and snap
   - [x] 4. Judge
-  - [ ] 5. Rank and report, one-command CLI
+  - [~] 5. Rank and report, one-command CLI (code done and tested offline; real-pack run pending)
   - [ ] 6. Evaluation on the pack and packaging
 - Prefer a working, reproducible prototype over extra features. Do not add optional switches (section 9) unless their trigger fires in the evaluation.
 - Distinguish observed data, assumptions and recommendations. Never invent screenplay content or timestamps.
@@ -123,11 +123,11 @@ Anchored 0-4 per criterion:
 | Rule | Check | On fail |
 |---|---|---|
 | Duration | 20.0-60.0s total after snapping | Trim edge units, else reject |
-| Hook window | Record offset of the first non-CAMERA event (dialogue, ACTION, SOUND FX) from the start | Set `late_hook` flag if > 3.0s; the hook score gate decides, no hard reject |
+| Hook window | Record offset of the first SPOKEN line (first utterance) in the clip from the clip start (D3) | Set `late_hook` flag if > 3.0s; the hook score gate decides, no hard reject |
 | Cuts | No cut inside an utterance | Reject unless flagged `mid_utterance_cut` |
 | Order | Segments chronological; v1 is a single contiguous segment | Reject |
 | Quotes | Hook, cliffhanger and quoted strings equal source text exactly | Replace from source or strip |
-| Overlap in one episode | Temporal overlap > 30% with a higher-ranked pick | Drop |
+| Overlap in one episode | Overlap longer than 30% of the SHORTER clip with a higher-ranked pick (D24) | Drop |
 | Per-episode count | 0-2 final promos | Cap |
 | Recap/duplicate | Near-duplicate utterances (similarity >= 0.8) across adjacent episodes or between promos | Flag and demote the later one |
 | Gate | min(hook, cliffhanger, standalone) >= 2 | Not post-worthy |
@@ -243,4 +243,6 @@ Minimum submission (~4.5-5h): audit, stages 2-5, 50-episode outputs, B1 vs final
 - AI mistakes log entry (Stage 1): my first draft of the audit labelled "dialogue is templated" as HELD because adjacent episodes had more duplicate lines (5) than the N vs N-10 control (1). A corpus-wide check showed only 3 repeated lines have 4+ words, so the claim is only PARTLY true. Caught before delivery thanks to the control.
 - Stages 2-4 implemented: `rubric.md` is the shared rubric; `promofinder.llm` provides the mock and cached OpenAI-compatible clients; `stages.propose` sends one numbered whole-episode view and only accepts unit IDs; `stages.validate` owns duration checks, safe shot snapping, quotes, and the D3 spoken-line `late_hook` flag; `stages.judge` sees validated clip text only. Stage 5 remains responsible for wiring these stages into the one-command CLI, ranking, and reports.
 - D3 implementation note: `late_hook` is measured from the first utterance's start relative to the final snapped start; it is a flag, never a rejection.
-- Stage 1 local validation (synthetic sample only): Python 3.13 virtualenv, declared dependencies, and 37 tests passed; `promofinder audit --input sample` exited 0 and wrote the audit report and CSVs. Source review removed two unused names only; no parser, audit rule, schema, threshold, or glue-rule behavior changed.
+- Stage 5 built (decision.md D22-D29): `promofinder run` wires Stages 2-4, gate, weighted rank, overlap/cap/recap rules, JSON/CSV/HTML, separate failure log. Default provider is now groq with openai/gpt-oss-120b; mock must be requested with `--provider mock` and is labelled in console, HTML, manifest and MOCK_RUN.txt. Judge errors are logged per episode, never crash the run. Real model quality is still unverified until a run on the pack.
+- Cut order applied against the 8pm deadline (D29): video, random baseline, consistency runs cut; grading drops from 8 to 5 episodes.
+- Section 7 hook-window row fixed to match D3 (first spoken line).

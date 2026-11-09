@@ -1,4 +1,4 @@
-# PromoFinder (Stages 1-4 implemented)
+# PromoFinder (Stages 1-5 implemented)
 
 CLI tool for Kuku's AI Generalist Assignment, Problem 1: find and rank the best 20-60s promos in microdrama screenplay files.
 Implemented: parser/audit, an ID-only whole-episode proposer, deterministic validation and
@@ -35,6 +35,15 @@ Exit code 1 means at least one file failed to parse; it is listed at the top of 
 ```
 python -m pytest -q
 ```
+
+## Run (real)
+```
+.\.venv\Scripts\activate
+python -m promofinder run --input ..\data --out ..\outputs\run1 --only E008,E021,E033
+python -m promofinder run --input ..\data --out ..\outputs\full
+```
+Defaults come from config.yaml (groq, openai/gpt-oss-120b). Needs GROQ_API_KEY in .env. `--provider mock` runs offline and is labelled MOCK. Re-running reuses `.cache/`; `--fresh` re-asks the model.
+Outputs: promos.json/csv (ranked), candidates.json/csv (every judged clip with its status), failures.json/csv, raw/<episode>.json, report.html, run_manifest.json, audit/.
 
 ## Confidentiality
 The pack is confidential. `data/`, `outputs/`, `.env` and `.cache/` are ignored by git. `sample/` is an invented episode.

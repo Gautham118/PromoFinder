@@ -1,6 +1,6 @@
-# Non-secret defaults used by the Stage 2--4 client factory and future Stage 5 CLI.
-provider: mock
-model: mock-promofinder
+# Non-secret defaults for the client factory and the `run` CLI. Real runs use groq; mock must be requested explicitly.
+provider: groq
+model: openai/gpt-oss-120b
 base_url: https://api.groq.com/openai/v1
 api_key_env: GROQ_API_KEY
 cache_dir: .cache

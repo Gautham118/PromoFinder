@@ -194,3 +194,65 @@ class JudgedCandidate(BaseModel):
     scores: RubricScores
     reason: str
     evidence_unit_ids: list[str]
+
+
+# ---- Stage 5: ranking and reporting -------------------------------------------------
+
+class Segment(BaseModel):
+    episode_id: str
+    start_s: float
+    end_s: float
+    start_unit: str
+    end_unit: str
+
+
+class QuotedUnit(BaseModel):
+    unit_id: str
+    text: str                     # copied by code from the source unit, never from the model
+
+
+class Failure(BaseModel):
+    """A per-episode problem. Logged, never patched into outputs."""
+
+    episode_id: str
+    stage: str                    # parse | propose | validate | judge | pipeline
+    kind: str                     # llm_error | judge_error | rejected_candidate | unexpected_error | parse_error
+    detail: str
+
+
+class EpisodeResult(BaseModel):
+    """Everything one episode produced. Written unedited as raw/<episode>.json."""
+
+    episode_id: str
+    proposal: Optional[ProposalResponse] = None
+    validation: Optional[ValidationResult] = None
+    judged: list[JudgedCandidate] = Field(default_factory=list)
+    failures: list[Failure] = Field(default_factory=list)
+
+
+class RankedEntry(BaseModel):
+    judged: JudgedCandidate
+    weighted: float
+    status: str                   # ranked | not_in_top_n | below_gate | dropped_overlap | dropped_cap
+    rank: Optional[int] = None
+    recap: bool = False
+
+
+class Promo(BaseModel):
+    promo_id: str
+    episode_id: str
+    rank: Optional[int]
+    status: str
+    gate_passed: bool
+    score_breakdown: dict[str, float]
+    segments: list[Segment]
+    duration_total_s: float
+    join_type: Literal["none", "intra_episode", "cross_episode"] = "none"
+    hook: QuotedUnit
+    cliffhanger: QuotedUnit
+    reason: str
+    flags: list[str] = Field(default_factory=list)
+    provider: str
+    model: str
+    prompt_hash: str
+    run_id: str
