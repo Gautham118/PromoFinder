@@ -114,3 +114,83 @@ class ParsedEpisode(BaseModel):
     blocks: list[Block]           # original layer
     units: list[Unit]             # derived layer
     audit: EpisodeAudit
+
+
+# ---- Stages 2--4: model-facing and deterministic candidate schemas -----------------
+
+class ProposedCandidate(BaseModel):
+    """An ID-only proposal returned by the whole-episode proposer."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    start_id: str
+    end_id: str
+    hook_id: str
+    cliffhanger_id: str
+
+
+class ProposalResponse(BaseModel):
+    """The proposer may legitimately find no post-worthy window."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    candidates: list[ProposedCandidate] = Field(default_factory=list, max_length=5)
+    no_promo_reason: Optional[str] = None
+
+
+class CandidateRejection(BaseModel):
+    candidate_index: int
+    reasons: list[str]
+
+
+class ValidatedCandidate(BaseModel):
+    """A candidate whose boundaries and source evidence are owned by Python."""
+
+    candidate_id: str
+    start_id: str
+    end_id: str
+    hook_id: str
+    cliffhanger_id: str
+    start_s: float
+    end_s: float
+    duration_s: float
+    hook_quote: str
+    cliffhanger_quote: str
+    unit_ids: list[str]
+    flags: list[str] = Field(default_factory=list)
+    snapped_start: bool = False
+    snapped_end: bool = False
+
+
+class ValidationResult(BaseModel):
+    valid: list[ValidatedCandidate] = Field(default_factory=list)
+    rejected: list[CandidateRejection] = Field(default_factory=list)
+
+
+class RubricScores(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    hook: int = Field(ge=0, le=4)
+    cliffhanger: int = Field(ge=0, le=4)
+    standalone: int = Field(ge=0, le=4)
+    escalation: int = Field(ge=0, le=4)
+    density: int = Field(ge=0, le=4)
+
+
+class JudgeItem(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    candidate_id: str
+    scores: RubricScores
+    reason: str = Field(min_length=1, max_length=500)
+    evidence_unit_ids: list[str] = Field(default_factory=list)
+
+
+class JudgeResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    judgments: list[JudgeItem] = Field(default_factory=list)
+
+
+class JudgedCandidate(BaseModel):
+    candidate: ValidatedCandidate
+    scores: RubricScores
+    reason: str
+    evidence_unit_ids: list[str]

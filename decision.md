@@ -3,7 +3,7 @@
 How this file works: the author asked Claude to make project decisions for them and to record each one here with the reason.
 Each entry: what was decided, why, whether it is easy to reverse, and its status. CLAUDE.md stays the source of truth for
 the plan; plan-level changes are ALSO added to its Decisions log. Contains no pack content (numbers only).
-Updated every session. Last updated: 2026-11-08 (after Stage 1).
+Updated every session. Last updated: 2026-11-08 (after Stages 2-4 implementation).
 
 ## Working rule (D0)
 - **Decision:** Claude decides by default, states one clear choice, logs it here, and flags any conflict with CLAUDE.md. It only asks the author for something Claude cannot do (create keys, run things locally, spend money).
@@ -24,7 +24,7 @@ Updated every session. Last updated: 2026-11-08 (after Stage 1).
 **D3. Change the hook-window flag: measure `late_hook` from the first SPOKEN line (first utterance) in the clip, flag if more than 3.0s. Still flag-only, never a hard reject.**
 - Why: the original rule used the first non-CAMERA event, but that event is at 0.0s in 32 of 50 episodes and never later than 2.9s, so the rule would almost never fire and would tell us nothing. The first spoken line (median 5.0s, max 22.0s at episode start) actually varies.
 - Conflict with CLAUDE.md section 7 (hook window row): this supersedes that row; logged in the CLAUDE.md Decisions log. The LLM hook score still decides post-worthiness.
-- Reversible: yes (Stage 3 validator only; not built yet). Status: decided, to be implemented in Stage 3.
+- Reversible: yes (Stage 3 validator only). Status: implemented.
 
 ## Provider and confidentiality
 
@@ -37,7 +37,7 @@ Updated every session. Last updated: 2026-11-08 (after Stage 1).
 **D5. Build the OpenAI-compatible adapter first (Groq speaks it), plus the `mock` provider. Skip the Google adapter unless time is left.**
 - Why: CLAUDE.md section 13 already says to keep the OpenAI-compatible adapter and cut the second one. One adapter also covers OpenRouter and probably Kuku's own API.
 - Model name, base URL and key variable live in `config.yaml` and `.env`, never in code (CLAUDE.md section 14). The exact Groq model is chosen when the key is created, from what the free tier offers that day; prefer the largest open-weight instruction model available, because weaker models will fail the strict JSON and unit-ID outputs first.
-- Reversible: yes. Status: decided, built in Stage 2.
+- Reversible: yes. Status: implemented in Stage 2.
 
 ## Design
 
@@ -78,8 +78,17 @@ Updated every session. Last updated: 2026-11-08 (after Stage 1).
 - The same character appears under different labels across episodes, so no logic may use labels for identity. Glue is unaffected (0 different-speaker rejections).
 - Status: Stage 1 closed.
 
+**D14. Codex's Stage 2-4 code is the base; Claude's earlier unmerged Stage 2 is discarded.** Review found 6 defects (cut inside speech accepted, no repair retry, retry policy, cwd-dependent rubric path, judge shuffle/quote checks, undefined score-2) and no tests; all fixed in one patch with 29 new tests (67 pass).
+**D15. Keep Codex's client interface (complete_json(system, user, response_model)) instead of CLAUDE.md's generate_json(messages, schema, temperature, seed).** Same function and still swappable. Recorded as a deviation.
+**D16. The validator REJECTS cuts inside an utterance (never repairs them).** The section 7 "trim edge units" duration repair is not built; reject only. Revisit if real runs show many near-miss durations.
+**D17. Model replies may contain extra keys (ignored). One repair retry for invalid JSON or schema, then a loud failure. A bad reply is never cached.**
+**D18. rubric.md now defines the score-2 anchors (tunable); the gate depends on what 2 means.**
+**D19. Judge: seeded shuffle of clip order, clips wrapped as data, quotes in reasons verified or stripped. Evidence IDs outside the clip still raise (Stage 5 must record that as a failure, not crash).**
+**D20. Measured (estimates, chars/4): proposer 1.7k-4.0k input tokens per call (median 2.8k, total ~142k); judge up to ~4.9k for 5 clips.**
+**D21. Stress test on all 50 real episodes with 2000 random windows: 0 crashes, 14% rejected for cutting inside speech.**
+
 ## Next steps (the author's short list)
 1. Unzip the repo, run the Codex prompt, and confirm `pytest` shows 37 passed and `git status` shows no `data/` or `outputs/`.
 2. Create a free Groq key at console.groq.com, turn on Zero Data Retention in Data Controls, and confirm the no-training statement on Groq's own pages (D4). Put the key in `.env` as `GROQ_API_KEY`. Do not paste it into any chat.
 3. Run the Stage 1 audit locally on the real pack (outside Codex's folder) and check it matches the numbers in CLAUDE.md.
-4. Tell Claude "start Stage 2". Claude then builds: LLM interface, `mock` provider, cache, `rubric.md`, the numbered-episode renderer and the proposer, with tests on the mock only.
+4. Implement Stage 5: wire Stages 2-4 into the resumable `run` CLI, then add deterministic gating, ranking, deduplication, and JSON/CSV/HTML reports.

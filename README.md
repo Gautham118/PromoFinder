@@ -1,7 +1,13 @@
-# PromoFinder (Stage 1: data audit and parser)
+# PromoFinder (Stages 1-4 implemented)
 
 CLI tool for Kuku's AI Generalist Assignment, Problem 1: find and rank the best 20-60s promos in microdrama screenplay files.
-Only Stage 1 exists so far: parser, utterance-group layer and data audit. No LLM code yet. See `CLAUDE.md` for the plan.
+Implemented: parser/audit, an ID-only whole-episode proposer, deterministic validation and
+boundary snapping, and a clip-only judge. Stage 5 will expose them through the resumable
+one-command `run` CLI and add ranking/reporting. See `CLAUDE.md` for the plan.
+
+The LLM layer is deliberately swappable: `mock` is offline, while the OpenAI-compatible
+client supports Groq and similar APIs. `config.yaml` contains non-secret defaults; credentials
+are read from the configured environment variable and `.cache/` stores resumable responses.
 
 ## Setup
 ```
