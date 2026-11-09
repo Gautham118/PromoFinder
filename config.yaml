@@ -1,0 +1,8 @@
+# Non-secret defaults used by the Stage 2--4 client factory and future Stage 5 CLI.
+provider: mock
+model: mock-promofinder
+base_url: https://api.groq.com/openai/v1
+api_key_env: GROQ_API_KEY
+cache_dir: .cache
+timeout_s: 60
+max_retries: 3

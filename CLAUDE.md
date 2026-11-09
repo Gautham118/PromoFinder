@@ -32,9 +32,9 @@ Judged on five lenses: problem choice and framing; approach and scale (AI vs cod
 - Blueprint v2 is **approved**. Work stage by stage, one stage at a time, and only implement what is asked for that stage.
 - Stages: 
   - [x] 1. Data audit and parser (done; see Decisions log for audit-verified corrections to section 4)
-  - [ ] 2. Propose stage
-  - [ ] 3. Validate and snap
-  - [ ] 4. Judge
+  - [x] 2. Propose stage
+  - [x] 3. Validate and snap
+  - [x] 4. Judge
   - [ ] 5. Rank and report, one-command CLI
   - [ ] 6. Evaluation on the pack and packaging
 - Prefer a working, reproducible prototype over extra features. Do not add optional switches (section 9) unless their trigger fires in the evaluation.
@@ -238,4 +238,6 @@ Minimum submission (~4.5-5h): audit, stages 2-5, 50-episode outputs, B1 vs final
   - Tokens (ESTIMATE, chars/4 and words x 1.33; no tokenizer offline): 1.0k to 4.0k per episode file (median about 2.6k by chars/4), about 0.1M for all 50. Section 5's ~8k in per episode is therefore an overestimate of episode text; prompt, rubric and few-shot overhead still has to be measured on 3 episodes.
 - Repo layout: `repo/` is the only git repo; the confidential pack and audit outputs live outside it in `../data` and `../outputs` (see decision.md D12).
 - AI mistakes log entry (Stage 1): my first draft of the audit labelled "dialogue is templated" as HELD because adjacent episodes had more duplicate lines (5) than the N vs N-10 control (1). A corpus-wide check showed only 3 repeated lines have 4+ words, so the claim is only PARTLY true. Caught before delivery thanks to the control.
+- Stages 2-4 implemented: `rubric.md` is the shared rubric; `promofinder.llm` provides the mock and cached OpenAI-compatible clients; `stages.propose` sends one numbered whole-episode view and only accepts unit IDs; `stages.validate` owns duration checks, safe shot snapping, quotes, and the D3 spoken-line `late_hook` flag; `stages.judge` sees validated clip text only. Stage 5 remains responsible for wiring these stages into the one-command CLI, ranking, and reports.
+- D3 implementation note: `late_hook` is measured from the first utterance's start relative to the final snapped start; it is a flag, never a rejection.
 - Stage 1 local validation (synthetic sample only): Python 3.13 virtualenv, declared dependencies, and 37 tests passed; `promofinder audit --input sample` exited 0 and wrote the audit report and CSVs. Source review removed two unused names only; no parser, audit rule, schema, threshold, or glue-rule behavior changed.
