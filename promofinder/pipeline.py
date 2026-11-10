@@ -27,6 +27,9 @@ def compute_prompt_hash(rubric_path: str | Path = RUBRIC_PATH) -> str:
     return h.hexdigest()[:12]
 
 
+SOFT_KINDS = {"rejected_candidate", "judge_retry_recovered", "evidence_outside_clip"}   # logged, but not episode failures
+
+
 def _fail(ep_id: str, stage: str, kind: str, e: Exception | str) -> Failure:
     return Failure(episode_id=ep_id, stage=stage, kind=kind, detail=str(e)[:500])
 
@@ -45,8 +48,17 @@ def process_episode(ep: ParsedEpisode, client: LLMClient, *, cache_bypass: bool 
         return res
     try:
         res.judged = judge(ep, res.validation.valid, client, cache_bypass=cache_bypass)
-    except (LLMError, ValueError) as e:       # wrong judgment count, evidence outside the clip, invalid JSON after repair
-        res.failures.append(_fail(ep.episode_id, "judge", "judge_error", e))
+    except (LLMError, ValueError) as first:   # wrong judgment count, evidence outside the clip, invalid JSON after repair
+        # D30: ask once more, bypassing the cache (the bad reply is cached). Never patch the reply; log both outcomes.
+        try:
+            res.judged = judge(ep, res.validation.valid, client, cache_bypass=True)
+            res.failures.append(_fail(ep.episode_id, "judge", "judge_retry_recovered", f"first attempt failed: {first}"))
+        except (LLMError, ValueError) as second:
+            res.failures.append(_fail(ep.episode_id, "judge", "judge_error", f"{second} (first attempt: {first})"))
+    for j in res.judged:
+        if j.evidence_dropped:
+            res.failures.append(_fail(ep.episode_id, "judge", "evidence_outside_clip",
+                                      f"{j.candidate.candidate_id}: model cited {j.evidence_dropped}; removed from evidence, scores kept"))
     return res
 
 
@@ -60,7 +72,7 @@ def run_episodes(episodes: list[ParsedEpisode], client: LLMClient, *, cache_bypa
             res = EpisodeResult(episode_id=ep.episode_id, failures=[_fail(ep.episode_id, "pipeline", "unexpected_error", f"{type(e).__name__}: {e}")])
         n_prop = len(res.proposal.candidates) if res.proposal else 0
         n_valid = len(res.validation.valid) if res.validation else 0
-        bad = [f for f in res.failures if f.stage != "validate"]
+        bad = [f for f in res.failures if f.kind not in SOFT_KINDS]
         log(f"[{i}/{len(episodes)}] {ep.episode_id}: proposed {n_prop}, valid {n_valid}, judged {len(res.judged)}"
             + (f"  !! {bad[0].stage} {bad[0].kind}: {bad[0].detail[:120]}" if bad else ""))
         results.append(res)

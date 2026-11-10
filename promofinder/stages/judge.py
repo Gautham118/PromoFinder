@@ -68,11 +68,10 @@ def judge(episode: ParsedEpisode, candidates: list[ValidatedCandidate], client: 
     judged: list[JudgedCandidate] = []
     for candidate in candidates:
         item = returned[candidate.candidate_id]
-        invalid_evidence = set(item.evidence_unit_ids) - set(candidate.unit_ids)
-        if invalid_evidence:
-            raise ValueError(f"judge cited evidence outside {candidate.candidate_id}: {sorted(invalid_evidence)}")
+        inside = set(candidate.unit_ids)      # D31: evidence outside the clip is reported, not fatal; scores are kept
         by_id = {u.unit_id: u for u in episode.units}
         source = " ".join(by_id[i].text for i in candidate.unit_ids)
         judged.append(JudgedCandidate(candidate=candidate, scores=item.scores, reason=strip_unverified_quotes(item.reason, source),
-                                      evidence_unit_ids=item.evidence_unit_ids))
+                                      evidence_unit_ids=[i for i in item.evidence_unit_ids if i in inside],
+                                      evidence_dropped=[i for i in item.evidence_unit_ids if i not in inside]))
     return judged

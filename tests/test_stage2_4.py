@@ -101,6 +101,7 @@ def test_request_shape_usage_and_cache(tmp_path, monkeypatch):
     assert ask(c).no_promo_reason == "none"
     url, headers, b = sent[0]
     assert url == "https://x.test/v1/chat/completions" and headers["Authorization"] == "Bearer secret-key"
+    assert headers["User-Agent"].startswith("promofinder/")
     assert b["response_format"] == {"type": "json_object"} and b["temperature"] == 0 and b["seed"] == 2026
     assert [m["role"] for m in b["messages"]] == ["system", "user"]
     assert c.usage["prompt_tokens"] == 100 and c.usage["completion_tokens"] == 10
@@ -275,8 +276,8 @@ def test_judge_needs_one_judgment_per_candidate_and_evidence_inside_the_clip(ep)
     cands = vcands(ep)
     with pytest.raises(ValueError, match="exactly one judgment"):
         judge(ep, cands, MockClient([answer(cands[:2])]))
-    with pytest.raises(ValueError, match="outside"):
-        judge(ep, cands, MockClient([answer(cands, evidence=["E001-S043"])]))
+    out = judge(ep, cands, MockClient([answer(cands, evidence=["E001-S043"])]))        # D31: reported, not fatal
+    assert all(j.evidence_unit_ids == [] and j.evidence_dropped == ["E001-S043"] for j in out)
     assert judge(ep, [], MockClient()) == []
 
 
@@ -297,3 +298,15 @@ def test_unverified_quotes_are_stripped_from_reasons(ep):
 def test_validated_candidate_model_roundtrip(ep):
     v = vcands(ep, 1)[0]
     assert ValidatedCandidate.model_validate(v.model_dump()) == v
+
+
+def test_groq_400_failed_json_gets_one_repair_then_succeeds(tmp_path, monkeypatch):
+    monkeypatch.setenv("PF_KEY", "k")
+    err = json.dumps({"error": {"message": "Failed to validate JSON.", "code": "json_validate_failed", "failed_generation": "{bad"}})
+    c, sent, _ = http_client(tmp_path, [(400, {}, err), (200, {}, body(GOOD))])
+    assert ask(c).no_promo_reason == "none" and len(sent) == 2 and c.usage["repairs"] == 1
+    assert sent[1][2]["messages"][-2] == {"role": "assistant", "content": "{bad"}
+    c2, sent2, _ = http_client(tmp_path / "b", [(400, {}, err), (400, {}, err)])
+    with pytest.raises(LLMError, match="after one repair retry"):
+        ask(c2)
+    assert len(sent2) == 2

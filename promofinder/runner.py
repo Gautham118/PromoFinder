@@ -13,7 +13,7 @@ from .config import load_config, load_dotenv
 from .llm import create_client
 from .models import Failure, ParsedEpisode
 from .parser import ParseError, list_episode_files, parse_file
-from .pipeline import compute_prompt_hash, recap_set, run_episodes
+from .pipeline import SOFT_KINDS, compute_prompt_hash, recap_set, run_episodes
 from .rank import rank_candidates
 from .report import write_outputs
 
@@ -69,7 +69,7 @@ def main(argv: Optional[list[str]] = None) -> int:
             "prompt_hash": compute_prompt_hash(), "episodes": len(episodes), "cache_bypassed": a.fresh,
             "usage": getattr(client, "usage", None)}
     failures = write_outputs(out, entries, results, extra, meta)
-    hard = [f for f in failures if f.stage != "validate"]
+    hard = [f for f in failures if f.kind not in SOFT_KINDS]
     print(f"\nrun {meta['run_id']}: {sum(e.status == 'ranked' for e in entries)} ranked promos from {len(episodes)} episodes; "
           f"{len(hard)} episode failures; {len(failures) - len(hard)} rejected candidates. Wrote {out}/")
     return 1 if hard else 0

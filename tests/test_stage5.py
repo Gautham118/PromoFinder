@@ -94,9 +94,17 @@ def test_judge_errors_become_failures_not_crashes(ep):
     wrong_count = process_episode(ep, MockClient([p, {"judgments": []}]))
     assert [f.kind for f in wrong_count.failures] == ["judge_error"] and wrong_count.judged == []
     bad_evidence = dict(judgment("E001-C01"), evidence_unit_ids=["E001-S043"])
-    assert process_episode(ep, MockClient([p, {"judgments": [bad_evidence]}])).failures[0].stage == "judge"
+    r = process_episode(ep, MockClient([p, {"judgments": [bad_evidence]}]))
+    assert len(r.judged) == 1 and r.judged[0].evidence_dropped == ["E001-S043"] and [f.kind for f in r.failures] == ["evidence_outside_clip"]
     invalid = process_episode(ep, MockClient([p, {"judgments": [{"candidate_id": "E001-C01"}]}]))
     assert invalid.failures[0].stage == "judge"
+
+
+def test_judge_retry_recovers_and_is_logged_not_hidden(ep):
+    p = {"candidates": PROPOSAL["candidates"][:1]}
+    client = MockClient([p, {"judgments": []}, {"judgments": [judgment("E001-C01")]}])
+    res = process_episode(ep, client)
+    assert len(res.judged) == 1 and [f.kind for f in res.failures] == ["judge_retry_recovered"] and len(client.requests) == 3
 
 
 class Boom:

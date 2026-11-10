@@ -23,6 +23,14 @@ class LLMError(RuntimeError):
     """A provider or structured-output failure that callers can report without repair."""
 
 
+class BadJSONReply(LLMError):
+    """Groq answers HTTP 400 'Failed to validate JSON' when the model's JSON is malformed; the bad text is in the error body."""
+
+    def __init__(self, message: str, failed: str = "") -> None:
+        super().__init__(message)
+        self.failed = failed
+
+
 class LLMClient(Protocol):
     def complete_json(self, *, system: str, user: str, response_model: type[T], cache_bypass: bool = False) -> T: ...
 
@@ -66,19 +74,27 @@ class OpenAICompatibleClient:
             self.usage["cache_hits"] += 1
             return self._validate(cached, response_model, "cached")
         messages = [{"role": "system", "content": system}, {"role": "user", "content": user}]
-        text = self._chat(messages)
+        first: Exception | None = None
         try:
-            payload = _json_object(text)
-            result = self._validate(payload, response_model, "provider")
-        except (ValueError, LLMError) as first:
+            text = self._chat(messages)
+        except BadJSONReply as e:                       # the provider rejected malformed JSON: treat like a bad reply (one repair)
+            text, first = e.failed, e
+        if first is None:
+            try:
+                payload = _json_object(text)
+                result = self._validate(payload, response_model, "provider")
+            except (ValueError, LLMError) as e:
+                first = e
+        if first is not None:
+            text = text or "(no output)"
             # CLAUDE.md 6c: structured JSON validated with Pydantic, with ONE repair retry.
             self.usage["repairs"] += 1
             repair = messages + [
                 {"role": "assistant", "content": text},
                 {"role": "user", "content": f"Your previous reply was not valid. Problem: {str(first)[:500]}\n"
                                             "Return ONLY the corrected JSON object in the required format, with no other text."}]
-            text2 = self._chat(repair)
             try:
+                text2 = self._chat(repair)
                 payload = _json_object(text2)
                 result = self._validate(payload, response_model, "provider")
             except (ValueError, LLMError) as second:
@@ -108,7 +124,9 @@ class OpenAICompatibleClient:
             body["seed"] = self.seed
         raw = json.dumps(body).encode("utf-8")
         url = f"{self.base_url}/chat/completions"
-        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+        # Groq sits behind Cloudflare, which answers HTTP 403 "error code: 1010" to Python's default urllib User-Agent.
+        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json", "Accept": "application/json",
+                   "User-Agent": "promofinder/0.3 (+python-urllib)"}
         last = ""
         for attempt in range(self.max_retries + 1):
             try:
@@ -118,6 +136,8 @@ class OpenAICompatibleClient:
             if status == 200:
                 return self._content(text)
             last = f"HTTP {status}: {text[:300]}"
+            if status == 400 and "json_validate_failed" in text:
+                raise BadJSONReply(last, _failed_generation(text))
             if status not in RETRY_STATUSES and status < 500:
                 raise LLMError(last)                      # bad key / bad request: retrying cannot help
             if attempt < self.max_retries:
@@ -147,6 +167,13 @@ class OpenAICompatibleClient:
             return response_model.model_validate(payload)
         except ValidationError as e:
             raise LLMError(f"{source} response does not match {response_model.__name__}: {e}") from e
+
+
+def _failed_generation(body: str) -> str:
+    try:
+        return str(json.loads(body)["error"].get("failed_generation") or "")[:4000]
+    except (json.JSONDecodeError, KeyError, TypeError, AttributeError):
+        return ""
 
 
 def _wait_seconds(headers: dict[str, str], attempt: int) -> float:

@@ -17,7 +17,7 @@ def mmss(sec: float) -> str:
 def to_promo(entry: RankedEntry, meta: dict[str, Any]) -> Promo:
     j = entry.judged
     c = j.candidate
-    flags = list(c.flags) + (["recap_overlap"] if entry.recap else [])
+    flags = list(c.flags) + (["recap_overlap"] if entry.recap else []) + (["evidence_outside_clip"] if j.evidence_dropped else [])
     ep_id = c.candidate_id.rsplit("-C", 1)[0]
     return Promo(
         promo_id=c.candidate_id, episode_id=ep_id, rank=entry.rank, status=entry.status, gate_passed=entry.status != "below_gate",

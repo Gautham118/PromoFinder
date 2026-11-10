@@ -194,6 +194,7 @@ class JudgedCandidate(BaseModel):
     scores: RubricScores
     reason: str
     evidence_unit_ids: list[str]
+    evidence_dropped: list[str] = Field(default_factory=list)   # IDs the model cited that are not in the clip (D31)
 
 
 # ---- Stage 5: ranking and reporting -------------------------------------------------
